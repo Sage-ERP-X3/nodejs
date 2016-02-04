@@ -1,0 +1,1 @@
+Redhat Enterprise 6 doesn't support Node.JS 4.2.X, so we embed especially Node.JS 0.12.9 instead.
