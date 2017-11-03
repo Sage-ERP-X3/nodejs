@@ -1,36 +1,44 @@
 #!/bin/sh
 # Currently the remote branch MUST exist
 # Sample usage: update-nodejs.sh 4.4.4 0.12.14
+VER=$1
+MAJOR=${VER%%.*}
+WINX64=win-x64
+
+if [ "$MAJOR" = "0" ] ; then
+	WINX64=x64
+fi
+
 git fetch origin
-git checkout $1
+git checkout $VER
 
 cd win32_x64
-echo "=== update windows version to $1"
-echo GET https://nodejs.org/dist/v$1/win-x64/node.exe in `pwd`
+echo "=== update windows version to $VER"
+echo GET https://nodejs.org/dist/v$VER/$WINX64/node.exe in `pwd`
 curl -O https://raw.githubusercontent.com/nodejs/node/master/LICENSE
-curl -O https://nodejs.org/dist/v$1/win-x64/node.exe
+curl -O https://nodejs.org/dist/v$VER/$WINX64/node.exe
 
 cd ../linux_x64
-echo "=== update linux version to $1"
-echo GET https://nodejs.org/dist/v$1/node-v$1-linux-x64.tar.gz in `pwd`
-curl -O https://nodejs.org/dist/v$1/node-v$1-linux-x64.tar.gz
-tar -xvf node-v$1-linux-x64.tar.gz node-v$1-linux-x64/LICENSE
-tar -xvf node-v$1-linux-x64.tar.gz node-v$1-linux-x64/bin/node
-mv node-v$1-linux-x64/LICENSE LICENSE
-mv node-v$1-linux-x64/bin/node node
-rm -r node-v$1-linux-x64
-rm node-v$1-linux-x64.tar.gz
+echo "=== update linux version to $VER"
+echo GET https://nodejs.org/dist/v$VER/node-v$VER-linux-x64.tar.gz in `pwd`
+curl -O https://nodejs.org/dist/v$VER/node-v$VER-linux-x64.tar.gz
+tar -xvf node-v$VER-linux-x64.tar.gz node-v$VER-linux-x64/LICENSE
+tar -xvf node-v$VER-linux-x64.tar.gz node-v$VER-linux-x64/bin/node
+mv node-v$VER-linux-x64/LICENSE LICENSE
+mv node-v$VER-linux-x64/bin/node node
+rm -r node-v$VER-linux-x64
+rm node-v$VER-linux-x64.tar.gz
 
 cd ../darwin_x64
-echo "=== update mac version to $1"
-echo GET https://nodejs.org/dist/v$1/node-v$1-darwin-x64.tar.gz in `pwd`
-curl -O https://nodejs.org/dist/v$1/node-v$1-darwin-x64.tar.gz
-tar -xvf node-v$1-darwin-x64.tar.gz node-v$1-darwin-x64/LICENSE
-tar -xvf node-v$1-darwin-x64.tar.gz node-v$1-darwin-x64/bin/node
-mv node-v$1-darwin-x64/LICENSE LICENSE
-mv node-v$1-darwin-x64/bin/node node
-rm -r node-v$1-darwin-x64
-rm node-v$1-darwin-x64.tar.gz
+echo "=== update mac version to $VER"
+echo GET https://nodejs.org/dist/v$VER/node-v$VER-darwin-x64.tar.gz in `pwd`
+curl -O https://nodejs.org/dist/v$VER/node-v$VER-darwin-x64.tar.gz
+tar -xvf node-v$VER-darwin-x64.tar.gz node-v$VER-darwin-x64/LICENSE
+tar -xvf node-v$VER-darwin-x64.tar.gz node-v$VER-darwin-x64/bin/node
+mv node-v$VER-darwin-x64/LICENSE LICENSE
+mv node-v$VER-darwin-x64/bin/node node
+rm -r node-v$VER-darwin-x64
+rm node-v$VER-darwin-x64.tar.gz
 cd ..
 
 if [ -n "$2" ]; then
@@ -47,7 +55,7 @@ if [ -n "$2" ]; then
 	cd ../..
 
 	echo "=== commit"
-	git commit -a -m "update node.js to $1 $2"
+	git commit -a -m "update node.js to $VER $2"
 	git checkout $2
 
 	cd linux_x64
@@ -79,8 +87,8 @@ if [ -n "$2" ]; then
 
 	cd ..
 	git commit -a -m "update node.js to $2"
-	git checkout $1
+	git checkout $VER
 else
-	git commit -a -m "update node.js to $1"
-	git checkout $1	
+	git commit -a -m "update node.js to $VER"
+	git checkout $VER	
 fi
