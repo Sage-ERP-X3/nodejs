@@ -10,6 +10,9 @@
 </tr>
 <tr>
 <td valign="top">
+<a href="#10.16.3">10.16.3</a><br/>
+<a href="#10.16.2">10.16.2</a><br/>
+<a href="#10.16.1">10.16.1</a><br/>
 <a href="#10.16.0">10.16.0</a><br/>
 <a href="#10.15.3">10.15.3</a><br/>
 <a href="#10.15.2">10.15.2</a><br/>
@@ -53,6 +56,105 @@
   * [0.10.x](CHANGELOG_V010.md)
   * [io.js](CHANGELOG_IOJS.md)
   * [Archive](CHANGELOG_ARCHIVE.md)
+
+<a id="10.16.3"></a>
+## 2019-08-15, Version 10.16.3 'Dubnium' (LTS), @BethGriggs
+
+### Notable changes
+
+This is a security release.
+
+Node.js, as well as many other implementations of HTTP/2, have been found
+vulnerable to Denial of Service attacks.
+See https://github.com/Netflix/security-bulletins/blob/master/advisories/third-party/2019-002.md
+for more information.
+
+Vulnerabilities fixed:
+
+* **CVE-2019-9511 “Data Dribble”**: The attacker requests a large amount of data from a specified resource over multiple streams. They manipulate window size and stream priority to force the server to queue the data in 1-byte chunks. Depending on how efficiently this data is queued, this can consume excess CPU, memory, or both, potentially leading to a denial of service.
+* **CVE-2019-9512 “Ping Flood”**: The attacker sends continual pings to an HTTP/2 peer, causing the peer to build an internal queue of responses. Depending on how efficiently this data is queued, this can consume excess CPU, memory, or both, potentially leading to a denial of service.
+* **CVE-2019-9513 “Resource Loop”**: The attacker creates multiple request streams and continually shuffles the priority of the streams in a way that causes substantial churn to the priority tree. This can consume excess CPU, potentially leading to a denial of service.
+* **CVE-2019-9514 “Reset Flood”**: The attacker opens a number of streams and sends an invalid request over each stream that should solicit a stream of RST_STREAM frames from the peer. Depending on how the peer queues the RST_STREAM frames, this can consume excess memory, CPU, or both, potentially leading to a denial of service.
+* **CVE-2019-9515 “Settings Flood”**: The attacker sends a stream of SETTINGS frames to the peer. Since the RFC requires that the peer reply with one acknowledgement per SETTINGS frame, an empty SETTINGS frame is almost equivalent in behavior to a ping. Depending on how efficiently this data is queued, this can consume excess CPU, memory, or both, potentially leading to a denial of service.
+* **CVE-2019-9516 “0-Length Headers Leak”**: The attacker sends a stream of headers with a 0-length header name and 0-length header value, optionally Huffman encoded into 1-byte or greater headers. Some implementations allocate memory for these headers and keep the allocation alive until the session dies. This can consume excess memory, potentially leading to a denial of service.
+* **CVE-2019-9517 “Internal Data Buffering”**: The attacker opens the HTTP/2 window so the peer can send without constraint; however, they leave the TCP window closed so the peer cannot actually write (many of) the bytes on the wire. The attacker then sends a stream of requests for a large response object. Depending on how the servers queue the responses, this can consume excess memory, CPU, or both, potentially leading to a denial of service.
+* **CVE-2019-9518 “Empty Frames Flood”**: The attacker sends a stream of frames with an empty payload and without the end-of-stream flag. These frames can be DATA, HEADERS, CONTINUATION and/or PUSH_PROMISE. The peer spends time processing each frame disproportionate to attack bandwidth. This can consume excess CPU, potentially leading to a denial of service. (Discovered by Piotr Sikora of Google)
+
+### Commits
+
+* [[`74507fae34`](https://github.com/nodejs/node/commit/74507fae34)] - **deps**: update nghttp2 to 1.39.2 (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+* [[`a397c881ec`](https://github.com/nodejs/node/commit/a397c881ec)] - **deps**: update nghttp2 to 1.39.1 (gengjiawen) [#28448](https://github.com/nodejs/node/pull/28448)
+* [[`fedfa12a33`](https://github.com/nodejs/node/commit/fedfa12a33)] - **deps**: update nghttp2 to 1.38.0 (gengjiawen) [#27295](https://github.com/nodejs/node/pull/27295)
+* [[`ab0f2ace36`](https://github.com/nodejs/node/commit/ab0f2ace36)] - **deps**: update nghttp2 to 1.37.0 (gengjiawen) [#26990](https://github.com/nodejs/node/pull/26990)
+* [[`0acbe05ee2`](https://github.com/nodejs/node/commit/0acbe05ee2)] - **http2**: allow security revert for Ping/Settings Flood (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+* [[`c152449012`](https://github.com/nodejs/node/commit/c152449012)] - **http2**: pause input processing if sending output (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+* [[`0ce699c7b1`](https://github.com/nodejs/node/commit/0ce699c7b1)] - **http2**: stop reading from socket if writes are in progress (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+* [[`17357d37a9`](https://github.com/nodejs/node/commit/17357d37a9)] - **http2**: consider 0-length non-end DATA frames an error (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+* [[`460f896c63`](https://github.com/nodejs/node/commit/460f896c63)] - **http2**: shrink default `vector::reserve()` allocations (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+* [[`f4242e24f9`](https://github.com/nodejs/node/commit/f4242e24f9)] - **http2**: handle 0-length headers better (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+* [[`477461a51f`](https://github.com/nodejs/node/commit/477461a51f)] - **http2**: limit number of invalid incoming frames (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+* [[`05dada46ee`](https://github.com/nodejs/node/commit/05dada46ee)] - **http2**: limit number of rejected stream openings (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+* [[`7f11465572`](https://github.com/nodejs/node/commit/7f11465572)] - **http2**: do not create ArrayBuffers when no DATA received (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+* [[`2eb914ff5f`](https://github.com/nodejs/node/commit/2eb914ff5f)] - **http2**: only call into JS when necessary for session events (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+* [[`76a7ada15d`](https://github.com/nodejs/node/commit/76a7ada15d)] - **http2**: improve JS-side debug logging (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+* [[`00f153da13`](https://github.com/nodejs/node/commit/00f153da13)] - **http2**: improve http2 code a bit (James M Snell) [#23984](https://github.com/nodejs/node/pull/23984)
+* [[`a0a14c809f`](https://github.com/nodejs/node/commit/a0a14c809f)] - **src**: pass along errors from http2 object creation (Anna Henningsen) [#25822](https://github.com/nodejs/node/pull/25822)
+* [[`d85e4006ab`](https://github.com/nodejs/node/commit/d85e4006ab)] - **test**: apply test-http2-max-session-memory-leak from v12.x (Anna Henningsen) [#29122](https://github.com/nodejs/node/pull/29122)
+
+<a id="10.16.2"></a>
+## 2019-08-06, Version 10.16.2 'Dubnium' (LTS), @BethGriggs
+
+### Notable changes
+
+This release patches a [regression](https://github.com/nodejs/node/issues/28932) in the OpenSSL upgrade to 1.1.1c that causes intermittent hangs in machines that have low entropy.
+
+### Commits
+
+* [[`894a9dd230`](https://github.com/nodejs/node/commit/894a9dd230)] - **deps**: cherry-pick c19c5a6 from openssl upstream (Ali Ijaz Sheikh) [#28983](https://github.com/nodejs/node/pull/28983)
+
+<a id="10.16.1"></a>
+## 2019-07-31, Version 10.16.1 'Dubnium' (LTS), @BethGriggs
+
+### Notable changes
+
+* **deps**: upgrade openssl sources to 1.1.1c (Sam Roberts) [#28212](https://github.com/nodejs/node/pull/28212)
+* **stream**: do not unconditionally call `\_read()` on `resume()` (Anna Henningsen) [#26965](https://github.com/nodejs/node/pull/26965)
+* **worker**: fix nullptr deref after MessagePort deser failure (Anna Henningsen) [#25076](https://github.com/nodejs/node/pull/25076)
+
+### Commits
+
+* [[`65ef26fdcb`](https://github.com/nodejs/node/commit/65ef26fdcb)] - **async_hooks**: avoid double-destroy HTTPParser (Gerhard Stoebich) [#27477](https://github.com/nodejs/node/pull/27477)
+* [[`8f5d6cf5f5`](https://github.com/nodejs/node/commit/8f5d6cf5f5)] - **deps**: update archs files for OpenSSL-1.1.1c (Sam Roberts) [#28212](https://github.com/nodejs/node/pull/28212)
+* [[`9e62852724`](https://github.com/nodejs/node/commit/9e62852724)] - **deps**: upgrade openssl sources to 1.1.1c (Sam Roberts) [#28212](https://github.com/nodejs/node/pull/28212)
+* [[`c59e0c256d`](https://github.com/nodejs/node/commit/c59e0c256d)] - **deps**: updated openssl upgrade instructions (Sam Roberts) [#28212](https://github.com/nodejs/node/pull/28212)
+* [[`609d2b9ea4`](https://github.com/nodejs/node/commit/609d2b9ea4)] - **deps**: V8: backport f27ac28 (Michaël Zasso) [#28061](https://github.com/nodejs/node/pull/28061)
+* [[`8f780e8f99`](https://github.com/nodejs/node/commit/8f780e8f99)] - **deps**: cherry-pick 88f8fe1 from upstream V8 (Yang Guo) [#24514](https://github.com/nodejs/node/pull/24514)
+* [[`ad588eb5fc`](https://github.com/nodejs/node/commit/ad588eb5fc)] - **doc**: adjust TOC margins (Roman Reiss) [#28075](https://github.com/nodejs/node/pull/28075)
+* [[`b3d8a1b1d0`](https://github.com/nodejs/node/commit/b3d8a1b1d0)] - **doc**: add missing changes entry (Ruben Bridgewater) [#24758](https://github.com/nodejs/node/pull/24758)
+* [[`819a647d8f`](https://github.com/nodejs/node/commit/819a647d8f)] - **esm**: fix esm load bug (ZYSzys) [#25491](https://github.com/nodejs/node/pull/25491)
+* [[`f34bb968c4`](https://github.com/nodejs/node/commit/f34bb968c4)] - **process**: make stdout and stderr emit 'close' on destroy (Matteo Collina) [#26691](https://github.com/nodejs/node/pull/26691)
+* [[`0339fba1bb`](https://github.com/nodejs/node/commit/0339fba1bb)] - **src**: handle empty Maybe in uv binding initialize (Anna Henningsen) [#25079](https://github.com/nodejs/node/pull/25079)
+* [[`f9e8e8856a`](https://github.com/nodejs/node/commit/f9e8e8856a)] - **src**: fix Get() usage in tls\_wrap.cc (cjihrig) [#24060](https://github.com/nodejs/node/pull/24060)
+* [[`b689008dea`](https://github.com/nodejs/node/commit/b689008dea)] - **src**: in-source comments and minor TLS cleanups (Sam Roberts) [#25713](https://github.com/nodejs/node/pull/25713)
+* [[`76af23a32b`](https://github.com/nodejs/node/commit/76af23a32b)] - **src**: remove internalBinding('config').warningFile (Joyee Cheung) [#24959](https://github.com/nodejs/node/pull/24959)
+* [[`b7dbc1c537`](https://github.com/nodejs/node/commit/b7dbc1c537)] - **src**: fix warning in cares\_wrap.cc (cjihrig) [#25230](https://github.com/nodejs/node/pull/25230)
+* [[`a8f78f02cb`](https://github.com/nodejs/node/commit/a8f78f02cb)] - **src**: fulfill Maybe contract in InlineDecoder (Anna Henningsen) [#25140](https://github.com/nodejs/node/pull/25140)
+* [[`0dee607409`](https://github.com/nodejs/node/commit/0dee607409)] - **src**: extract common Bind method (Jon Moss) [#22315](https://github.com/nodejs/node/pull/22315)
+* [[`08a32fbf57`](https://github.com/nodejs/node/commit/08a32fbf57)] - **src**: elevate v8 namespaces for node\_process.cc (Jayasankar) [#24578](https://github.com/nodejs/node/pull/24578)
+* [[`f3841c6750`](https://github.com/nodejs/node/commit/f3841c6750)] - **stream**: convert existing buffer when calling .setEncoding (Anna Henningsen) [#27936](https://github.com/nodejs/node/pull/27936)
+* [[`274b97c4ea`](https://github.com/nodejs/node/commit/274b97c4ea)] - **stream**: do not unconditionally call `\_read()` on `resume()` (Anna Henningsen) [#26965](https://github.com/nodejs/node/pull/26965)
+* [[`044e753aaf`](https://github.com/nodejs/node/commit/044e753aaf)] - **stream**: make \_read() be called indefinitely if the user wants so (Matteo Collina) [#26135](https://github.com/nodejs/node/pull/26135)
+* [[`f332265cda`](https://github.com/nodejs/node/commit/f332265cda)] - **test**: remove `util.inherits()` usage (ZYSzys) [#25245](https://github.com/nodejs/node/pull/25245)
+* [[`ada0ed55d1`](https://github.com/nodejs/node/commit/ada0ed55d1)] - **test**: fix pty test hangs on aix (Ben Noordhuis) [#28600](https://github.com/nodejs/node/pull/28600)
+* [[`2ae99160e5`](https://github.com/nodejs/node/commit/2ae99160e5)] - **test**: skip stringbytes-external-exceed-max on AIX (Sam Roberts) [#28516](https://github.com/nodejs/node/pull/28516)
+* [[`39637cb95f`](https://github.com/nodejs/node/commit/39637cb95f)] - **test**: skip tests related to CI failures on AIX (Sam Roberts) [#28469](https://github.com/nodejs/node/pull/28469)
+* [[`35be08a16f`](https://github.com/nodejs/node/commit/35be08a16f)] - **test**: clean up build files (Gabriel Schulhof) [#28297](https://github.com/nodejs/node/pull/28297)
+* [[`cc3ca08046`](https://github.com/nodejs/node/commit/cc3ca08046)] - **test**: clearing require cache crashes esm loader (Antoine du HAMEL) [#25491](https://github.com/nodejs/node/pull/25491)
+* [[`75052cadaa`](https://github.com/nodejs/node/commit/75052cadaa)] - **tls**: add debugging to native TLS code (Anna Henningsen) [#26843](https://github.com/nodejs/node/pull/26843)
+* [[`99dad28ebf`](https://github.com/nodejs/node/commit/99dad28ebf)] - **tls**: add CHECK for impossible condition (Anna Henningsen) [#26843](https://github.com/nodejs/node/pull/26843)
+* [[`5ffe04753e`](https://github.com/nodejs/node/commit/5ffe04753e)] - **tls**: renegotiate should take care of its own state (Sam Roberts) [#25997](https://github.com/nodejs/node/pull/25997)
+* [[`4a607fab49`](https://github.com/nodejs/node/commit/4a607fab49)] - **tools**: replace rollup with ncc (Rich Trott) [#24813](https://github.com/nodejs/node/pull/24813)
+* [[`14090b59fc`](https://github.com/nodejs/node/commit/14090b59fc)] - **worker**: fix nullptr deref after MessagePort deser failure (Anna Henningsen) [#25076](https://github.com/nodejs/node/pull/25076)
 
 <a id="10.16.0"></a>
 ## 2019-05-28, Version 10.16.0 'Dubnium' (LTS), @BethGriggs
